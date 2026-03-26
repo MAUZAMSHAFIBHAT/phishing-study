@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Account Verification</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 40px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .logo {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 12px; }
+    p  { font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 24px; }
+    #btn {
+      display: inline-block;
+      padding: 12px 36px;
+      background: #1a73e8;
+      color: white;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    #btn:disabled { background: #aaa; cursor: not-allowed; }
+    #countdown { font-size: 14px; color: #c00; margin-bottom: 16px; min-height: 20px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">IT Security</div>
+  <h1>Account Verification</h1>
+  <p>Please verify your account credentials to continue.</p>
+  <div id="countdown"></div>
+  <button id="btn" onclick="proceed()">Proceed</button>
+</div>
+<script>
+  // ── CONFIG ──────────────────────────────
+  var CONDITION  = "A";   // No delay, Low urgency
+  var DELAY_SEC  = 0;     // 0 = no delay
+  var FORM_URL   = "https://docs.google.com/forms/d/e/1FAIpQLScZzMQ4f8a39RteIEFlCkWNWhwqPgt7ToQh8EoecYOJlybjVw/viewform";
+  var ENTRY_COND = "entry.34422974";
+  var ENTRY_LAT  = "entry.606946016";
+  // ────────────────────────────────────────
+
+  var landTime = Date.now();
+  var btn = document.getElementById("btn");
+  var cdEl = document.getElementById("countdown");
+
+  if (DELAY_SEC === 0) {
+    cdEl.style.display = "none";
+  } else {
+    btn.disabled = true;
+    var t = DELAY_SEC;
+    cdEl.textContent = "Please wait " + t + " seconds before proceeding...";
+    var iv = setInterval(function() {
+      t--;
+      if (t > 0) {
+        cdEl.textContent = "Please wait " + t + " seconds before proceeding...";
+      } else {
+        clearInterval(iv);
+        cdEl.style.color = "#2a7a2a";
+        cdEl.textContent = "You may now proceed.";
+        btn.disabled = false;
+      }
+    }, 1000);
+  }
+
+  function proceed() {
+    var latency = Date.now() - landTime;
+    var url = FORM_URL
+      + "?usp=pp_url"
+      + "&" + ENTRY_COND + "=" + encodeURIComponent(CONDITION)
+      + "&" + ENTRY_LAT  + "=" + latency;
+    window.location.href = url;
+  }
+</script>
+</body>
+</html>
