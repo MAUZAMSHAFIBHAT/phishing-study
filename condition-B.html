@@ -1,80 +1,239 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Account Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duke IT Status – Account Alert</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 40px;
-      max-width: 480px;
-      width: 90%;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .logo {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 24px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    h1 { font-size: 20px; color: #1a1a1a; margin-bottom: 12px; }
-    p  { font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 24px; }
-    #btn {
-      display: inline-block;
-      padding: 12px 36px;
-      background: #1a73e8;
-      color: white;
-      font-size: 15px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    #btn:disabled { background: #aaa; cursor: not-allowed; }
-    #countdown { font-size: 14px; color: #c00; margin-bottom: 16px; min-height: 20px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f5f5f5; color: #333; font-size: 14px; }
+
+    /* Top nav bar — Duke blue */
+    .topbar { background: #003087; padding: 0 24px; height: 48px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar-logo { color: white; font-size: 15px; font-weight: 600; letter-spacing: 0.3px; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+    .topbar-logo span { opacity: 0.75; font-weight: 400; font-size: 13px; }
+    .topbar-right { color: rgba(255,255,255,0.7); font-size: 12px; }
+
+    /* Sub-nav */
+    .subnav { background: #00539b; padding: 0 24px; height: 36px; display: flex; align-items: center; gap: 24px; }
+    .subnav a { color: rgba(255,255,255,0.85); font-size: 12px; text-decoration: none; }
+    .subnav a:hover { color: white; }
+
+    /* Main layout */
+    .container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+
+    /* Page title row */
+    .page-title { font-size: 22px; font-weight: 600; color: #003087; margin-bottom: 4px; }
+    .page-subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
+
+    /* ALERT BANNER */
+    .alert-banner { background: #fff3cd; border: 1px solid #ffc107; border-left: 4px solid #e65100; border-radius: 4px; padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
+    .alert-icon { font-size: 18px; margin-top: 1px; flex-shrink: 0; }
+    .alert-title { font-weight: 600; font-size: 14px; color: #7b3f00; margin-bottom: 3px; }
+    .alert-body { font-size: 13px; color: #5a3e00; line-height: 1.5; }
+
+    /* Status card */
+    .card { background: white; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+    .card-header { padding: 12px 18px; background: #f9f9f9; border-bottom: 1px solid #eee; font-weight: 600; font-size: 14px; color: #003087; display: flex; align-items: center; justify-content: space-between; }
+    .card-body { padding: 0; }
+    .service-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 18px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .service-row:last-child { border-bottom: none; }
+    .service-name { color: #333; }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 12px; }
+    .status-operational { background: #e8f5e9; color: #2e7d32; }
+    .status-warning { background: #fff3e0; color: #e65100; }
+    .status-danger { background: #fdecea; color: #c62828; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green { background: #43a047; }
+    .dot-orange { background: #ef6c00; }
+    .dot-red { background: #e53935; }
+
+    /* Highlighted row */
+    .service-row.highlighted { background: #fff8f0; border-left: 3px solid #e65100; }
+
+    /* Action section */
+    .action-card { background: white; border: 1px solid #ddd; border-radius: 6px; padding: 22px 24px; margin-bottom: 16px; }
+    .action-title { font-size: 15px; font-weight: 600; color: #003087; margin-bottom: 8px; }
+    .action-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 18px; }
+    
+    /* Countdown */
+    #countdown-wrap { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px; color: #666; display: flex; align-items: center; gap: 8px; }
+    #countdown-wrap.ready { background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
+    .spinner { width: 14px; height: 14px; border: 2px solid #ccc; border-top-color: #003087; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    .spinner.done { border: 2px solid #43a047; border-top-color: #43a047; animation: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Verify button */
+    #verify-btn { background: #003087; color: white; border: none; border-radius: 4px; padding: 10px 24px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+    #verify-btn:hover:not(:disabled) { background: #00539b; }
+    #verify-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+    /* Legend */
+    .legend { display: flex; gap: 20px; font-size: 12px; color: #666; margin-bottom: 20px; align-items: center; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+
+    /* Footer */
+    .footer { border-top: 1px solid #ddd; padding: 16px 0; margin-top: 24px; font-size: 12px; color: #888; text-align: center; }
+    .footer a { color: #00539b; text-decoration: none; }
   </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo">IT Security</div>
-  <h1>Account Verification</h1>
-  <p>Please verify your account credentials to continue.</p>
-  <div id="countdown"></div>
-  <button id="btn" onclick="proceed()">Proceed</button>
+
+<div class="topbar">
+  <a class="topbar-logo" href="#">
+    <svg width="22" height="22" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="48" fill="white" fill-opacity="0.15" stroke="white" stroke-width="2"/><text x="50" y="67" text-anchor="middle" font-size="52" font-weight="700" fill="white" font-family="Arial">D</text></svg>
+    Duke IT Status
+    <span>| Office of Information Technology</span>
+  </a>
+  <div class="topbar-right">status.oit.duke.edu</div>
 </div>
+
+<div class="subnav">
+  <a href="#">Home</a>
+  <a href="#">Incident History</a>
+  <a href="#">Subscribe to Updates</a>
+  <a href="#">Contact OIT Service Desk</a>
+</div>
+
+<div class="container">
+
+  <div class="page-title">Duke IT System Status</div>
+  <div class="page-subtitle">Real-time status of Duke University IT services &mdash; Updated automatically</div>
+
+  <!-- ALERT BANNER -->
+  <div class="alert-banner">
+    <div class="alert-icon">&#9888;</div>
+    <div>
+      <div class="alert-title">Account Security Alert &mdash; Action Required</div>
+      <div class="alert-body">Our automated security systems have detected suspicious activity associated with your Duke email account. Please review and verify your identity to prevent disruption to your access.</div>
+    </div>
+  </div>
+
+  <!-- Accounts and Email section -->
+  <div class="card">
+    <div class="card-header">
+      Accounts and Email
+      <span class="status-pill status-warning"><span class="dot dot-orange"></span>Requires Attention</span>
+    </div>
+    <div class="card-body">
+      <div class="service-row highlighted">
+        <span class="service-name"><strong>Email Account</strong> &mdash; Potential Compromise</span>
+        <span class="status-pill status-warning">
+          <span class="dot dot-orange"></span>
+          Potential Compromise
+        </span>
+      </div>
+      <div class="service-row highlighted">
+        <span class="service-name"><strong>NetID Authentication</strong> &mdash; Verification Pending</span>
+        <span class="status-pill status-warning"><span class="dot dot-orange"></span>Verification Pending</span>
+      </div>
+      <div class="service-row">
+        <span class="service-name">Active Directory</span>
+        <span class="status-pill status-operational"><span class="dot dot-green"></span>Operational</span>
+      </div>
+      <div class="service-row">
+        <span class="service-name">Alumni Email</span>
+        <span class="status-pill status-operational"><span class="dot dot-green"></span>Operational</span>
+      </div>
+      <div class="service-row">
+        <span class="service-name">Kerberos</span>
+        <span class="status-pill status-operational"><span class="dot dot-green"></span>Operational</span>
+      </div>
+      <div class="service-row">
+        <span class="service-name">Multi-Factor Authentication</span>
+        <span class="status-pill status-operational"><span class="dot dot-green"></span>Operational</span>
+      </div>
+      <div class="service-row">
+        <span class="service-name">Shibboleth</span>
+        <span class="status-pill status-operational"><span class="dot dot-green"></span>Operational</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other services collapsed -->
+  <div class="card">
+    <div class="card-header">Collaboration and Communication <span class="status-pill status-operational"><span class="dot dot-green"></span>Operational</span></div>
+  </div>
+  <div class="card">
+    <div class="card-header">Network <span class="status-pill status-operational"><span class="dot dot-green"></span>Operational</span></div>
+  </div>
+  <div class="card">
+    <div class="card-header">Security <span class="status-pill status-operational"><span class="dot dot-green"></span>Operational</span></div>
+  </div>
+
+  <!-- Action section -->
+  <div class="action-card">
+    <div class="action-title">Identity Verification Required</div>
+    <div class="action-desc">
+      OIT Security has flagged your account for verification. To restore full access and confirm your identity, please complete the verification process below. This process is handled through Duke's secure NetID portal.
+    </div>
+    <div id="countdown-wrap">
+      <div class="spinner" id="spinner"></div>
+      <span id="countdown-text">Loading secure verification session&hellip;</span>
+    </div>
+    <button id="verify-btn" disabled onclick="proceed()">Verify My Duke Account</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="dot dot-green"></span> Operational</div>
+    <div class="legend-item"><span class="dot dot-orange"></span> Degraded / Requires Attention</div>
+    <div class="legend-item"><span class="dot dot-red"></span> Confirmed Issue</div>
+  </div>
+
+  <div class="footer">
+    Questions? <a href="#">Contact the OIT Service Desk</a> &nbsp;|&nbsp;
+    <a href="#">Report an Outage</a> &nbsp;|&nbsp;
+    Powered by Duke Office of Information Technology
+  </div>
+
+</div>
+
 <script>
-  // ── CONFIG ──────────────────────────────
-  var CONDITION  = "B";   // No delay, Low urgency
-  var DELAY_SEC  = 5;     // 0 = no delay
+  var CONDITION  = "B";
   var FORM_URL   = "https://docs.google.com/forms/d/e/1FAIpQLScZzMQ4f8a39RteIEFlCkWNWhwqPgt7ToQh8EoecYOJlybjVw/viewform";
   var ENTRY_COND = "entry.34422974";
   var ENTRY_LAT  = "entry.606946016";
-  // ────────────────────────────────────────
+  var DELAY_SEC = 5;
 
   var landTime = Date.now();
-  var btn = document.getElementById("btn");
-  var cdEl = document.getElementById("countdown");
+  var btn  = document.getElementById("verify-btn");
+  var wrap = document.getElementById("countdown-wrap");
+  var txt  = document.getElementById("countdown-text");
+  var spin = document.getElementById("spinner");
+
+  function enable() {
+    btn.disabled = false;
+    wrap.classList.add("ready");
+    spin.classList.add("done");
+    txt.textContent = "Secure session ready. Click below to proceed.";
+  }
 
   if (DELAY_SEC === 0) {
-    cdEl.style.display = "none";
+    enable();
   } else {
-    btn.disabled = true;
     var t = DELAY_SEC;
-    cdEl.textContent = "Please wait " + t + " seconds before proceeding...";
+    txt.textContent = "Please wait " + t + " second" + (t !== 1 ? "s" : "") + " while we prepare your secure session…";
     var iv = setInterval(function() {
       t--;
+      if (t > 0) {
+        txt.textContent = "Please wait " + t + " second" + (t !== 1 ? "s" : "") + " while we prepare your secure session…";
+      } else {
+        clearInterval(iv);
+        enable();
+      }
+    }, 1000);
+  }
+
+  function proceed() {
+    var latency = Date.now() - landTime;
+    window.location.href = FORM_URL
+      + "?usp=pp_url"
+      + "&" + ENTRY_COND + "=" + encodeURIComponent(CONDITION)
+      + "&" + ENTRY_LAT  + "=" + latency;
+  }
+</script>
+</body>
+</html>      t--;
       if (t > 0) {
         cdEl.textContent = "Please wait " + t + " seconds before proceeding...";
       } else {
